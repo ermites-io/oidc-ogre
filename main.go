@@ -2,8 +2,8 @@
 
 package main
 
-//go:generate protoc oidc.proto -I. -I$HOME/tools/pb3/include -I/home/rival/dev/go/pkg/mod/github.com/grpc-ecosystem/grpc-gateway@v1.9.5/third_party/googleapis --go_out=plugins=grpc:.
-//go:generate protoc oidc.proto -I. -I$HOME/tools/pb3/include -I/home/rival/dev/go/pkg/mod/github.com/grpc-ecosystem/grpc-gateway@v1.9.5/third_party/googleapis --grpc-gateway_out=logtostderr=true:.
+//go:generate protoc oidc.proto -I. -I$HOME/tools/pb3/include -I/home/rival/dev/go/pkg/mod/github.com/grpc-ecosystem/grpc-gateway@v1.12.1/third_party/googleapis --go_out=plugins=grpc:.
+//go:generate protoc oidc.proto -I. -I$HOME/tools/pb3/include -I/home/rival/dev/go/pkg/mod/github.com/grpc-ecosystem/grpc-gateway@v1.12.1/third_party/googleapis --grpc-gateway_out=logtostderr=true:.
 
 import (
 	"fmt"
