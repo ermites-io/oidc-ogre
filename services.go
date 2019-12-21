@@ -19,12 +19,8 @@ func grpcServer(svc *OidcService, hostport string) {
 		panic(err)
 	}
 
-	fmt.Printf("start grpc service\n")
+	fmt.Printf("starting grpc service\n")
 	grpcServer := grpc.NewServer()
-	/*
-		grpc.UnaryInterceptor(rpc.ForwardContextInterceptor),
-		grpc.Creds(creds),
-	*/
 
 	RegisterOidcServer(grpcServer, svc)
 	err = grpcServer.Serve(nfd)
@@ -38,6 +34,7 @@ func restServer(svc *OidcService, hostport string) {
 
 	dialopts = append(dialopts, grpc.WithInsecure())
 	dialopts = append(dialopts, grpc.WithDefaultCallOptions(grpc.FailFast(true)))
+	dialopts = append(dialopts, grpc.WithBlock())
 
 	nfd, err := grpc.Dial(grpcConnect, dialopts...)
 	if err != nil {
@@ -52,11 +49,6 @@ func restServer(svc *OidcService, hostport string) {
 	runtime.HTTPError = svc.OidcHandleHTTPError
 
 	grpcmux := runtime.NewServeMux(
-		/*
-			//runtime.WithIncomingHeaderMatcher(hdrForwarder), // match headers we need to bring back to the gRPC stack
-			runtime.WithOutgoingHeaderMatcher(headerRemover),
-			runtime.WithMetadata(headerToMetadata),
-		*/
 		runtime.WithProtoErrorHandler(svc.OidcHandleHTTPError),    // handle our library specific error codes.
 		runtime.WithForwardResponseOption(cookieOrRedirectMapper), // create the Location Header + state cookie for the auth
 		runtime.WithMetadata(headerToMetadata),                    // get the cookie and fill it in metadatas.
@@ -68,38 +60,10 @@ func restServer(svc *OidcService, hostport string) {
 		panic(err)
 	}
 
-	fwdopt := grpcmux.GetForwardResponseOptions()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("FORWARD OPTIONS: %d\n", len(fwdopt))
-
-	fmt.Printf("hmm @ %p\n", cookieOrRedirectMapper)
-	fmt.Printf("hmm @ %p\n", fwdopt[0])
-	//httpmux := http.NewServeMux()
-	/*
-		httpmux.Handle("/redirect", grpcmux)
-		httpmux.Handle("/session-redirect", grpcmux)
-	*/
-
-	// XXX one attempt/version
-	//googleRedirect := http.RedirectHandler("http://www.google.com", http.StatusFound)
-	/*
-		gr := &googleRedirect{
-			cf: cf,
-		}
-		httpmux.Handle("/login/google", gr)
-
-		god := &googleAuth{
-			cf: cf,
-		}
-		httpmux.Handle("/oauth", god)
-	*/
-
-	//httpmux.Handle("/login/github", grpcmux)
-	//httpmux.Handle("/login/microsoft", grpcmux)
-	//http.ListenAndServe(hostport, httpmux) // serve that on 8080
-	fmt.Printf("ON FART\n")
+	fmt.Printf("starting rest-gateway service\n")
 	err = http.ListenAndServe(hostport, grpcmux) // serve that on 8080
 	panic(err)
+}
+
+func restOnlyServer() {
 }
